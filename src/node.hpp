@@ -26,6 +26,8 @@
 
 #include "SDL2/SDL.h"
 
+#include <cmath>
+#include <functional>
 #include <list>
 
 class Node {
@@ -67,3 +69,9 @@ private:
 Node* addChildNode(Node* parent, int direction, int length);
 void drawNodeTree(SDL_Renderer*, Node* root);
 void destroyTree(Node* root);
+
+void generateTree(Node* node, int depth, int spread, int sproutChance);
+void findLeaves(Node* root, std::list<Node*>* leafList);
+void forEachNode(Node* root, std::function<int(Node*)> fn);
+int countEachNode(Node* node);
+int findDeepestLeaf(Node* node);

@@ -69,8 +69,6 @@ std::list<Node*>* Node::GetChildren() {
 //public functions
 //-------------------------
 
-#include <cmath>
-
 Node* addChildNode(Node* parent, int direction, int length) {
 	//make, push & setup
 	Node* child = new Node();
@@ -111,4 +109,74 @@ void destroyTree(Node* root) {
 
 	root->GetChildren()->clear();
 	delete root;
+}
+
+//this forces the creation of more nodes
+void generateTree(Node* node, int depth, int spread, int sproutChance) {
+	if (depth < 0) {
+		return;
+	}
+	addChildNode(node, rand() % spread + node->GetDirection() - (spread/2), 10);
+
+	if ((sproutChance == 0 || rand() % sproutChance == 0) && sproutChance != 99) {
+		//wider spread for new shoots
+		addChildNode(node, rand() % (spread*2) + node->GetDirection() - spread, 10);
+	}
+
+	for (auto& it : *node->GetChildren()) {
+		generateTree(it, depth - 1, spread, sproutChance);
+	}
+}
+
+//this finds the end points of the tree, ignoring types
+void findLeaves(Node* root, std::list<Node*>* leafList) {
+	if (root->GetChildren()->size() == 0) {
+		leafList->push_back(root);
+	}
+	else {
+		for (auto& it : *root->GetChildren()) {
+			findLeaves(it, leafList);
+		}
+	}
+}
+
+//apply the given function to all nodes
+void forEachNode(Node* root, std::function<int(Node*)> fn) {
+	fn(root);
+	for (auto& it : *root->GetChildren()) {
+		forEachNode(it, fn);
+	}
+}
+
+
+int countEachNode(Node* node) {
+	int count = 0;
+	forEachNode(node, [&count](Node* node) -> int {
+		count++;
+		return 0;
+	});
+	return count;
+}
+
+
+int findDeepestLeaf(Node* node) {
+	if (node->GetChildren()->size() == 0) {
+		return 1;
+	}
+
+	std::list<int> depthList;
+
+	for (auto& it : *node->GetChildren()) {
+		depthList.push_back(findDeepestLeaf(it));
+	}
+
+	int deepest = 0;
+
+	for (auto& it : depthList) {
+		if (it > deepest) {
+			deepest = it;
+		}
+	}
+
+	return deepest + 1;
 }
