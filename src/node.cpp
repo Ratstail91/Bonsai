@@ -107,7 +107,6 @@ void drawNodeTree(SDL_Renderer* renderer, Node* root) {
 void destroyTree(Node* root) {
 	for (auto& it : *root->GetChildren()) {
 		destroyTree(it);
-		delete it;
 	}
 
 	root->GetChildren()->clear();

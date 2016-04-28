@@ -26,18 +26,19 @@
 //-------------------------
 
 //this forces the creation of more nodes
-void generateTree(Node* node, int depth, int spread) {
+void generateTree(Node* node, int depth, int spread, int sproutChance) {
 	if (depth < 0) {
 		return;
 	}
 	addChildNode(node, rand() % spread + node->GetDirection() - (spread/2), 20);
 
-	if (rand() % 10 == 0) {
-		addChildNode(node, rand() % spread + node->GetDirection() - (spread/2), 20);
+	if ((sproutChance == 0 || rand() % sproutChance == 0) && sproutChance != 99) {
+		//wider spread for new shoots
+		addChildNode(node, rand() % (spread*2) + node->GetDirection() - spread, 20);
 	}
 
 	for (auto& it : *node->GetChildren()) {
-		generateTree(it, depth - 1, spread);
+		generateTree(it, depth - 1, spread, sproutChance);
 	}
 }
 
@@ -65,17 +66,45 @@ int countEachNode(Node* node) {
 	int count = 0;
 	forEachNode(node, [&count](Node* node) -> int {
 		count++;
+		return 0;
 	});
 	return count;
 }
 
+int findDeepestLeaf(Node* node) {
+	if (node->GetChildren()->size() == 0) {
+		return 1;
+	}
+
+	std::list<int> depthList;
+
+	for (auto& it : *node->GetChildren()) {
+		depthList.push_back(findDeepestLeaf(it));
+	}
+
+	int deepest = 0;
+
+	for (auto& it : depthList) {
+		if (it > deepest) {
+			deepest = it;
+		}
+	}
+
+	return deepest + 1;
+}
+
 //auto-grow the tree, (customize for different species)
-void growTree(Node* root, int depth, int spread) {
+void growCherryBlossom(Node* root) {
+	//defaults
+	int depth = 0;
+	int spread = 50;
+	int sproutChance = 10;
+
 	//maximum plant size
 	std::list<Node*> leafList;
 	findLeaves(root, &leafList);
 
-	if (leafList.size() >= 50 || countEachNode(root) >= 300) {
+	if (leafList.size() >= 50 || countEachNode(root) >= 250) {
 		return;
 	}
 
@@ -83,25 +112,40 @@ void growTree(Node* root, int depth, int spread) {
 	forEachNode(root, [](Node* node) -> int {
 		if (node->GetType() != Node::Type::FLOWER) {
 			node->SetType(Node::Type::STEM);
+			return 0;
 		}
 		return 0;
 	});
 
+	//force the first sprout at depth 10
+	int deepestLeaf = findDeepestLeaf(root);
+	if (deepestLeaf < 10) {
+		sproutChance = 99;
+	}
+	if (deepestLeaf == 10) {
+		sproutChance = 0;
+	}
+
 	//grow all non-flower leaves
 	for (auto& it : leafList) {
 		if (it->GetType() != Node::Type::FLOWER) {
-			generateTree(it, depth, spread);
+			generateTree(it, depth, spread, sproutChance);
 		}
 	}
 
 	//grow some flowers
 	for (auto& it : leafList) {
+		//trunk
+		if (deepestLeaf < 10) {
+			break;
+		}
+
 		if (it->GetType() == Node::Type::FLOWER) {
 			continue;
 		}
 
-		if (rand() % 15 == 0) {
-			Node* child = addChildNode(it, rand() % spread + it->GetDirection() - (spread/2), it->GetLength());
+		if (rand() % 10 == 0) {
+			Node* child = addChildNode(it, rand() % (spread*2) + it->GetDirection() - spread, it->GetLength());
 			child->SetType(Node::Type::FLOWER);
 		}
 	}
@@ -114,17 +158,6 @@ void growTree(Node* root, int depth, int spread) {
 			it->SetType(Node::Type::LEAF);
 		}
 	}
-
-	//make sure there is at least one leaf type left
-//	for (auto& it : leafList) {
-//		if (it->GetType() == Node::Type::LEAF) {
-//			return;
-//		}
-//	}
-
-//	leafList.back()->SetType(Node::Type::LEAF);
-
-	//NOTE: fix the graphics elsewhere
 }
 
 //-------------------------
@@ -144,8 +177,6 @@ ExampleScene::ExampleScene() {
 	rootNode->GetSprite()->SetTexture(textureLoader.Find("stem.png"));
 	rootNode->SetOrigin({400, 500});
 	rootNode->SetDirection(270);
-
-//	generateTree(rootNode, 20, 50);
 
 	//put the pot under the plant
 	potImage.SetTexture(textureLoader.Find("pot.png"));
@@ -216,13 +247,20 @@ void ExampleScene::KeyDown(SDL_KeyboardEvent const& event) {
 		break;
 
 		case SDLK_SPACE: {
-			growTree(rootNode, 0, 50);
+			growCherryBlossom(rootNode);
 			std::list<Node*> leafList;
 			findLeaves(rootNode, &leafList);
-			std::cout << "Leaf Count: " << leafList.size() << "\tNode Count: " << countEachNode(rootNode) << std::endl;
+			std::cout << "depth: " << findDeepestLeaf(rootNode) << "\tLeaves: " << leafList.size() << std::endl;
 			CorrectSprites();
 		}
 		break;
+
+		case SDLK_TAB:
+			for (auto& it : *rootNode->GetChildren()) {
+				destroyTree(it);
+			}
+			rootNode->GetChildren()->clear();
+			CorrectSprites();
 	}
 }
 
@@ -245,5 +283,6 @@ void ExampleScene::CorrectSprites() {
 				node->GetSprite()->SetTexture(textureLoader.Find("flower.png"));
 			break;
 		}
+		return 0;
 	});
 }
