@@ -30,10 +30,18 @@
 
 class Node {
 public:
+	enum Type {
+		LEAF,
+		STEM,
+		FLOWER
+	};
+
 	Node() = default;
 	~Node() = default;
 
 	//accessors & mutators
+	Type SetType(Type t);
+	Type GetType();
 	int SetDirection(int i);
 	int GetDirection();
 	int SetLength(int i);
@@ -46,6 +54,7 @@ public:
 	std::list<Node*>* GetChildren();
 
 private:
+	Type type = Type::LEAF;
 	//right = 0, down = 90, left = 180, up = 270
 	int direction = 0;
 	int length = 0;

@@ -25,6 +25,14 @@
 //accessors & mutators
 //-------------------------
 
+Node::Type Node::SetType(Type t) {
+	return type = t;
+}
+
+Node::Type Node::GetType() {
+	return type;
+}
+
 int Node::SetDirection(int i) {
 	return direction = i;
 }

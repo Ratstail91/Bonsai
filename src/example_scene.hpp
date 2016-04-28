@@ -52,6 +52,8 @@ private:
 	void KeyDown(SDL_KeyboardEvent const& event) override;
 	void KeyUp(SDL_KeyboardEvent const& event) override;
 
+	void CorrectSprites();
+
 	//members
 	Node* rootNode;
 	TextureLoader& textureLoader = TextureLoader::GetSingleton();
