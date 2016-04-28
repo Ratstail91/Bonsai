@@ -21,6 +21,10 @@
 */
 #include "example_scene.hpp"
 
+//-------------------------
+//tree management
+//-------------------------
+
 void generateTree(Node* node, int depth, int spread) {
 	if (depth < 0) {
 		return;
@@ -34,20 +38,57 @@ void generateTree(Node* node, int depth, int spread) {
 	}
 }
 
-ExampleScene::ExampleScene() {
-	srand(time(nullptr));
+void findLeaves(Node* root, std::list<Node*>* leafList) {
+	if (root->GetChildren()->size() == 0) {
+		leafList->push_back(root);
+	}
+	else {
+		for (auto& it : *root->GetChildren()) {
+			findLeaves(it, leafList);
+		}
+	}
+}
 
+void forEachNode(Node* root, std::function<int(Node*)> fn) {
+	fn(root);
+	for (auto& it : *root->GetChildren()) {
+		forEachNode(it, fn);
+	}
+}
+
+//-------------------------
+//Scene
+//-------------------------
+
+ExampleScene::ExampleScene() {
+	//setup
+	srand(time(nullptr));
+	textureLoader.Load(GetRenderer(), "rsc/", "pot.png");
+	textureLoader.Load(GetRenderer(), "rsc/", "stem.png");
+	textureLoader.Load(GetRenderer(), "rsc/", "leaf.png");
+
+	//setup the rootload
 	rootNode = new Node();
-	rootNode->GetSprite()->Load(GetRenderer(), "rsc/node.png");
+	rootNode->GetSprite()->SetTexture(textureLoader.Find("stem.png"));
 	rootNode->SetOrigin({400, 500});
 	rootNode->SetDirection(270);
 
 	generateTree(rootNode, 20, 50);
 
 	//put the pot under the plant
-	potImage.Load(GetRenderer(), "rsc/pot.png");
+	potImage.SetTexture(textureLoader.Find("pot.png"));
 	potX = rootNode->GetOrigin().x - (potImage.GetClipW() - rootNode->GetSprite()->GetClipW()) / 2;
 	potY = rootNode->GetOrigin().y;
+
+	std::list<Node*> leafList;
+
+	findLeaves(rootNode, &leafList);
+
+	std::cout << "Leaves: " << leafList.size() << std::endl;
+
+	for (auto& it : leafList) {
+		it->GetSprite()->SetTexture(textureLoader.Find("leaf.png"));
+	}
 }
 
 ExampleScene::~ExampleScene() {

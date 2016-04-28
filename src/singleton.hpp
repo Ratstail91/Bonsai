@@ -21,40 +21,40 @@
 */
 #pragma once
 
-#include "image.hpp"
-#include "vector2.hpp"
+#include <stdexcept>
 
-#include "SDL2/SDL.h"
-
-#include <list>
-
-class Node {
+template<typename T>
+class Singleton {
 public:
-	Node() = default;
-	~Node() = default;
+	static T& GetSingleton() {
+		if (!ptr) {
+			throw(std::logic_error("This singleton has not been created"));
+		}
+		return *ptr;
+	}
+	static void CreateSingleton() {
+		if (ptr) {
+			throw(std::logic_error("This singleton has already been created"));
+		}
+		ptr = new T();
+	}
+	static void DeleteSingleton() {
+		if (!ptr) {
+			throw(std::logic_error("A non-existant singleton cannot be deleted"));
+		}
+		delete ptr;
+		ptr = nullptr;
+	}
 
-	//accessors & mutators
-	int SetDirection(int i);
-	int GetDirection();
-	int SetLength(int i);
-	int GetLength();
-
-	Vector2 SetOrigin(Vector2 v);
-	Vector2 GetOrigin();
-
-	Image* GetSprite();
-	std::list<Node*>* GetChildren();
+protected:
+	Singleton() = default;
+	Singleton(Singleton const&) = default;
+	Singleton(Singleton&&) = default;
+	~Singleton() = default;
 
 private:
-	//right = 0, down = 90, left = 180, up = 270
-	int direction = 0;
-	int length = 0;
-	Vector2 origin; //cached position for drawing
-	Image sprite;
-	std::list<Node*> children;
+	static T* ptr;
 };
 
-//public functions
-Node* addChildNode(Node* parent, int direction, int length);
-void drawNodeTree(SDL_Renderer*, Node* root);
-void destroyTree(Node* root);
+template<typename T>
+T* Singleton<T>::ptr = nullptr;

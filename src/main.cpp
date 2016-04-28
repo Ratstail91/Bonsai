@@ -21,6 +21,8 @@
 */
 #include "application.hpp"
 
+#include "texture_loader.hpp"
+
 #include "SDL2/SDL.h"
 
 #include <iostream>
@@ -29,10 +31,17 @@
 int main(int argc, char** argv) {
 	std::cout << "Beginning " << argv[0] << std::endl;
 	try {
+		//create the singletons
+		TextureLoader::CreateSingleton();
+
+		//run the application
 		Application app;
 		app.Init(argc, argv);
 		app.Proc();
 		app.Quit();
+
+		//destroy the singletons
+		TextureLoader::DeleteSingleton();
 	}
 	catch(std::exception& e) {
 		std::cerr << "Fatal Error: " << e.what() << std::endl;

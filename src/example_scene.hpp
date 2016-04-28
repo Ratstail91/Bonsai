@@ -25,8 +25,11 @@
 
 #include "image.hpp"
 #include "node.hpp"
+#include "texture_loader.hpp"
 
 #include <ctime>
+#include <functional>
+#include <iostream>
 
 class ExampleScene : public BaseScene {
 public:
@@ -51,6 +54,7 @@ private:
 
 	//members
 	Node* rootNode;
+	TextureLoader& textureLoader = TextureLoader::GetSingleton();
 	Image potImage;
 	int potX = 0;
 	int potY = 0;

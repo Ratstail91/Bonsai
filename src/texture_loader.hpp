@@ -22,39 +22,25 @@
 #pragma once
 
 #include "image.hpp"
-#include "vector2.hpp"
+#include "singleton.hpp"
 
-#include "SDL2/SDL.h"
+#include <functional>
+#include <map>
 
-#include <list>
-
-class Node {
+class TextureLoader : public Singleton<TextureLoader> {
 public:
-	Node() = default;
-	~Node() = default;
+	SDL_Texture* Load(SDL_Renderer*, std::string dirname, std::string fname);
+	SDL_Texture* Find(std::string fname);
+	void Unload(std::string fname);
+	void UnloadAll();
+	void UnloadIf(std::function<bool(std::pair<const std::string, Image const&>)> fn);
 
-	//accessors & mutators
-	int SetDirection(int i);
-	int GetDirection();
-	int SetLength(int i);
-	int GetLength();
-
-	Vector2 SetOrigin(Vector2 v);
-	Vector2 GetOrigin();
-
-	Image* GetSprite();
-	std::list<Node*>* GetChildren();
+	int Size();
 
 private:
-	//right = 0, down = 90, left = 180, up = 270
-	int direction = 0;
-	int length = 0;
-	Vector2 origin; //cached position for drawing
-	Image sprite;
-	std::list<Node*> children;
-};
+	friend Singleton<TextureLoader>;
+	TextureLoader();
+	~TextureLoader();
 
-//public functions
-Node* addChildNode(Node* parent, int direction, int length);
-void drawNodeTree(SDL_Renderer*, Node* root);
-void destroyTree(Node* root);
+	std::map<std::string, Image> elementMap;
+};
