@@ -36,7 +36,8 @@ void growCherryBlossom(Node* root) {
 	std::list<Node*> leafList;
 	findLeaves(root, &leafList);
 
-	if (findDeepestLeaf(root) >= 60) {
+//	if (findDeepestLeaf(root) >= 60) {
+	if (leafList.size() >= 800) {
 		return;
 	}
 
@@ -113,7 +114,7 @@ ExampleScene::ExampleScene() {
 
 	//put the pot under the plant
 	potImage.SetTexture(textureLoader.Find("pot.png"));
-	potX = rootNode->GetOrigin().x - (potImage.GetClipW() - rootNode->GetSprite()->GetClipW()) / 2;
+	potX = rootNode->GetOrigin().x - potImage.GetClipW() / 2;
 	potY = rootNode->GetOrigin().y;
 
 	std::list<Node*> leafList;
@@ -183,7 +184,7 @@ void ExampleScene::KeyDown(SDL_KeyboardEvent const& event) {
 			growCherryBlossom(rootNode);
 			std::list<Node*> leafList;
 			findLeaves(rootNode, &leafList);
-			std::cout << "depth: " << findDeepestLeaf(rootNode) << "\tLeaves: " << leafList.size() << std::endl;
+			std::cout << "Leaves: " << leafList.size() << "\tTotal Nodes: " << countEachNode(rootNode) << std::endl;
 			CorrectSprites();
 		}
 		break;

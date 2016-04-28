@@ -95,7 +95,10 @@ void drawNodeTree(SDL_Renderer* renderer, Node* root) {
 		return;
 	}
 
-	root->GetSprite()->DrawTo(renderer, root->GetOrigin().x, root->GetOrigin().y);
+	int drawX = root->GetOrigin().x - root->GetSprite()->GetClipW() / 2;
+	int drawY = root->GetOrigin().y;
+
+	root->GetSprite()->DrawTo(renderer, drawX, drawY);
 
 	for (auto& it : *root->GetChildren()) {
 		drawNodeTree(renderer, it);
