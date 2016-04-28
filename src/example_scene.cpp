@@ -162,7 +162,36 @@ void ExampleScene::MouseMotion(SDL_MouseMotionEvent const& event) {
 }
 
 void ExampleScene::MouseButtonDown(SDL_MouseButtonEvent const& event) {
-	//
+	switch(event.button) {
+		case SDL_BUTTON_LEFT: {
+			//find the selected node
+			Node* selected = nullptr;
+			Vector2 mouse(event.x, event.y);
+			forEachNode(rootNode, [&](Node* node) -> int {
+				if ((mouse - node->GetOrigin()).Length() <= 8) {
+					selected = node;
+				}
+				return 0;
+			});
+
+			//delete the selected node & it's children
+			if (selected != nullptr && selected != rootNode) {
+				destroyTree(selected);
+			}
+
+			//BUGFIX: find and fix the invalidated pointer
+			forEachNode(rootNode, [&](Node* node) -> int {
+				for (std::list<Node*>::iterator it = node->GetChildren()->begin(); it != node->GetChildren()->end(); it++) {
+					if (*it == selected) {
+						node->GetChildren()->erase(it);
+						return 0;
+					}
+				}
+				return 0;
+			});
+		}
+		break;
+	}
 }
 
 void ExampleScene::MouseButtonUp(SDL_MouseButtonEvent const& event) {
