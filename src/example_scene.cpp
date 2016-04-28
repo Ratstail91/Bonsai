@@ -30,11 +30,11 @@ void generateTree(Node* node, int depth, int spread, int sproutChance) {
 	if (depth < 0) {
 		return;
 	}
-	addChildNode(node, rand() % spread + node->GetDirection() - (spread/2), 20);
+	addChildNode(node, rand() % spread + node->GetDirection() - (spread/2), 10);
 
 	if ((sproutChance == 0 || rand() % sproutChance == 0) && sproutChance != 99) {
 		//wider spread for new shoots
-		addChildNode(node, rand() % (spread*2) + node->GetDirection() - spread, 20);
+		addChildNode(node, rand() % (spread*2) + node->GetDirection() - spread, 10);
 	}
 
 	for (auto& it : *node->GetChildren()) {
@@ -104,7 +104,7 @@ void growCherryBlossom(Node* root) {
 	std::list<Node*> leafList;
 	findLeaves(root, &leafList);
 
-	if (leafList.size() >= 50 || countEachNode(root) >= 250) {
+	if (findDeepestLeaf(root) >= 60) {
 		return;
 	}
 
